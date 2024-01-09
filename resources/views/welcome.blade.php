@@ -15,7 +15,7 @@
 
 <body>
 
-    <h1>Google Maps API</h1>
+    <h1>Google Maps API harjutus</h1>
     <div id="map"></div>
 
     <script>
@@ -59,37 +59,70 @@
 
             // Event listener for map click
             map.addListener('click', (event) => {
-                // Prompt user for marker information (name, description)
-                const markerName = prompt('Enter marker name:');
-                const markerDescription = prompt('Enter marker description:');
+                // Ask user if they want to save a new marker
+                const wantToSaveMarker = confirm('Soovid salvestada uut nööpi?');
 
-                // Create a new marker
-                const newMarker = new google.maps.Marker({
-                    position: event.latLng,
-                    map: map,
-                    title: markerName,
-                });
+                if (wantToSaveMarker) {
+                    // Prompt user for marker information (name, description)
+                    const markerName = prompt('Sisesta nööbi nimi:');
+                    const markerDescription = prompt('Sisesta nööbi kirjeldus:');
 
-                // Create an info window for the new marker
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<strong>${markerName}</strong><br>${markerDescription}`,
-                });
+                    // Create a new marker
+                    const newMarker = new google.maps.Marker({
+                        position: event.latLng,
+                        map: map,
+                        title: markerName,
+                    });
 
-                // Attach a click event to show the info window
-                newMarker.addListener('click', () => {
-                    infoWindow.open(map, newMarker);
-                });
+                    // Create an info window for the new marker
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `<strong>${markerName}</strong><br>${markerDescription}`,
+                    });
 
-                // Optionally, you can save the new marker information to your backend here
-                saveMarkerToBackend(markerName, markerDescription, event.latLng);
+                    // Attach a click event to show the info window
+                    newMarker.addListener('click', () => {
+                        infoWindow.open(map, newMarker);
+                    });
+
+                    // Save the new marker information to your backend
+                    saveMarkerToBackend(markerName, markerDescription, event.latLng);
+                }
             });
         }
 
-        // Function to save marker information to the backend (you need to implement this)
+        // Function to save marker information to the backend
         function saveMarkerToBackend(name, description, position) {
-            // Implement the logic to save the marker data to your Laravel backend
-            // You may use Ajax, fetch, or another method to send the data to your server
-            console.log('Saving marker to backend:', name, description, position);
+            const latitude = position.lat();
+            const longitude = position.lng();
+
+            console.log('Marker data:', { name, description, latitude, longitude });
+            
+
+            fetch('/markers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        latitude: latitude,
+                        longitude: longitude,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Uus nööbike salvestatud:', data);
+                })
+                .catch(error => {
+                    console.error('Miskit juhtus, nööbikest ei salvestatud:', error);
+                });
+
+            console.log('Saving marker to backend:', name, description, {
+                latitude,
+                longitude
+            });
         }
     </script>
 

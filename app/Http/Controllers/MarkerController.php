@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Marker;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MarkerController extends Controller
 {
@@ -20,15 +21,24 @@ class MarkerController extends Controller
 
     public function store(Request $request)
     {
+{
         $request->validate([
-            'name' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
+            'name' => 'required|string',
+            'description' => 'required|string',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]);
 
-        Marker::create($request->all());
+        $marker = Marker::create([
+            'name' => $request->input('name'),
+            'description' => $request->input('description'),
+            'latitude' => $request->input('latitude'),
+            'longitude' => $request->input('longitude'),
+        ]);
 
-        return redirect()->route('markers.index');
+        return response()->json($marker, 201);
+}
+
     }
 
     public function edit(Marker $marker)
