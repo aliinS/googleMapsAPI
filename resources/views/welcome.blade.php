@@ -16,7 +16,18 @@
 <body>
 
     <h1>Google Maps API harjutus</h1>
+    <div>
+        <p>Kliki kaardil, et lisada uus nööp või lisa manuaalselt allpool.</p>
+    </div>
     <div id="map"></div>
+    <div id="">
+        <h2>Lisa uus marker:</h2>
+        <div id="createMarker"></div>
+    </div>
+    <div id="markerList">
+        <h2>Marker List</h2>
+        <ul id="markersUl"></ul>
+    </div>
 
     <script>
         function initMap() {
@@ -53,6 +64,12 @@
                         markerObject.addListener('click', () => {
                             markerInfoWindow.open(map, markerObject);
                         });
+
+                        // Add the marker to the list
+                        const markerList = document.getElementById('markersUl');
+                        const listItem = document.createElement('li');
+                        listItem.textContent = marker.name;
+                        markerList.appendChild(listItem);
                     });
                 })
                 .catch(error => console.error('Error fetching markers:', error));
@@ -85,44 +102,42 @@
                     });
 
                     // Save the new marker information to your backend
-                    saveMarkerToBackend(markerName, markerDescription, event.latLng);
+                    saveMarkerToBackend(markerName, markerDescription, event.latLng)
+                        .then(savedMarker => {
+                            console.log('Uus nööbike salvestatud:', savedMarker);
+                            // Add the new marker to the list
+                            const markerList = document.getElementById('markersUl');
+                            const listItem = document.createElement('li');
+                            listItem.textContent = savedMarker.name;
+                            markerList.appendChild(listItem);
+                        })
+                        .catch(error => {
+                            console.error('Miskit juhtus, nööbikest ei salvestatud:', error);
+                        });
                 }
             });
         }
 
         // Function to save marker information to the backend
-        function saveMarkerToBackend(name, description, position) {
-            const latitude = position.lat();
-            const longitude = position.lng();
-
-            console.log('Marker data:', { name, description, latitude, longitude });
-            
-
-            fetch('/markers', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        description: description,
-                        latitude: latitude,
-                        longitude: longitude,
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Uus nööbike salvestatud:', data);
-                })
-                .catch(error => {
-                    console.error('Miskit juhtus, nööbikest ei salvestatud:', error);
-                });
-
-            console.log('Saving marker to backend:', name, description, {
-                latitude,
-                longitude
+        async function saveMarkerToBackend(name, description, position) {
+            const response = await fetch('/markers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    latitude: position.lat(),
+                    longitude: position.lng(),
+                }),
             });
+
+            if (!response.ok) {
+                throw new Error(`Failed to save marker: ${response.statusText}`);
+            }
+
+            return response.json();
         }
     </script>
 
@@ -132,7 +147,8 @@
 
     <script
         src="https://maps.googleapis.com/maps/api/js?key={{ config('app.google_api_key') }}&callback=initMap&libraries=places"
-        defer></script>
+        defer>
+    </script>
 </body>
 
 </html>

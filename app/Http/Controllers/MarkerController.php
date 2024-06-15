@@ -4,40 +4,46 @@ namespace App\Http\Controllers;
 
 use App\Models\Marker;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class MarkerController extends Controller
 {
+    /**
+     * Display a listing of the markers.
+     */
     public function index()
     {
         $markers = Marker::all();
-        return response()->json($markers);
+
+        return view('markers.index', compact('markers'));
     }
 
+    /**
+     * Show the form for creating a new marker.
+     */
     public function create()
     {
         return view('markers.create');
     }
 
+    /**
+     * Store a newly created marker in storage.
+     */
     public function store(Request $request)
     {
-{
-        $request->validate([
+
+        $validatedData = $request->validate([
             'name' => 'required|string',
             'description' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
         ]);
 
-        $marker = Marker::create([
-            'name' => $request->input('name'),
-            'description' => $request->input('description'),
-            'latitude' => $request->input('latitude'),
-            'longitude' => $request->input('longitude'),
-        ]);
+            Marker::create($validatedData);
 
-        return response()->json($marker, 201);
-}
+            return redirect()->route('markers.index')
+            ->with('success', 'Marker updated successfully');
+
+        
 
     }
 

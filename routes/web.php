@@ -25,7 +25,7 @@ Route::get('/markers', [MarkerController::class, 'index'])->name('markers.index'
 Route::get('/markers/create', [MarkerController::class, 'create'])->name('markers.create');
 
 // Store a new marker in the database
-Route::post('/markers', [MarkerController::class, 'store']);
+Route::post('/markers', [MarkerController::class, 'store'])->name('markers.store');
 
 // Display the form to edit an existing marker
 Route::get('/markers/{marker}/edit', [MarkerController::class, 'edit'])->name('markers.edit');
