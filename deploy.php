@@ -3,46 +3,17 @@ namespace Deployer;
 
 require 'recipe/laravel.php';
 
-// Zone connection
+// Config
 
-set('application', 'googleAPI');
-set('remote_user', 'virt118415');
-set('http_user', 'virt118415');
-set('keep_releases', '2');
+set('repository', 'https://github.com/aliinS/googleMapsAPI.git');
 
-host('ta22saar.itmajakas.ee')
-    ->setHostname('ta22saar.itmajakas.ee')
-    ->set('http_user', 'virt118415')
-    ->set('deploy_path', '~/domeenid/www.ta22saar.itmajakas.ee/googlemmaps')
-    ->set('branch', 'main');
+add('shared_files', []);
+add('shared_dirs', []);
+add('writable_dirs', []);
+
+// Hosts
 
 
-set('repository', 'git@github.com:aliinS/googleMapsAPI.git');
-
-// Tasks
-task('opcache:clear', function() {
-    run('killall php82-cgi || true');
-})->desc('Clear opcache');
-
-task('build:node', function () {
-    cd('{{release_path}}');
-    run('npm i');
-    run('npx vite build');
-    run('rm -rf node_modules');
-});
-
-task('deploy', [
-    'deploy:prepare',
-    'deploy:vendors',
-    'artisan:storage:link',
-    'artisan:view:cache',
-    'artisan:config:cache',
-    'build:node',
-    'deploy:publish',
-    'opcache:clear',
-    'artisan:cache:clear'
-]);
 // Hooks
 
 after('deploy:failed', 'deploy:unlock');
-

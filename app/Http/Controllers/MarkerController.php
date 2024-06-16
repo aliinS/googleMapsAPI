@@ -14,7 +14,7 @@ class MarkerController extends Controller
     {
         $markers = Marker::all();
 
-        return view('markers.index', compact('markers'));
+        return view('index', compact('markers'));
     }
 
     /**
@@ -22,53 +22,80 @@ class MarkerController extends Controller
      */
     public function create()
     {
-        return view('markers.create');
+        return view('create');
     }
 
     /**
      * Store a newly created marker in storage.
      */
     public function store(Request $request)
-    {
+{
+    $validatedData = $request->validate([
+        'name' => 'required',
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+        'description' => 'nullable',
+    ]);
 
+    $marker = Marker::create($validatedData);
+
+    return redirect()->route('markers.index')
+        ->with('success', 'Marker created successfully');
+}
+
+    
+
+    /**
+     * Show the form for editing the specified marker.
+     */
+    public function edit($id)
+    {
+        $marker = Marker::find($id);
+        if ($marker) {
+            return view('edit', ['marker' => $marker]);
+        } else {
+            // Handle the case where the marker doesn't exist
+            return redirect()->back()->withErrors('Marker not found.');
+        }
+    }
+
+    /**
+     * Update the specified marker in storage.
+     */
+    public function update(Request $request, $id)
+    {
         $validatedData = $request->validate([
-            'name' => 'required|string',
-            'description' => 'required|string',
+            'name' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'description' => 'nullable',
         ]);
 
-            Marker::create($validatedData);
+        $marker = Marker::find($id);
+        if (! $marker) {
+            return redirect()->back()->withErrors('Marker not found.');
+        }
 
-            return redirect()->route('markers.index')
+        $marker->update($validatedData);
+
+        return redirect()->route('markers.index')
             ->with('success', 'Marker updated successfully');
-
-        
-
     }
 
-    public function edit(Marker $marker)
-    {
-        return view('markers.edit', compact('marker'));
-    }
-
-    public function update(Request $request, Marker $marker)
-    {
-        $request->validate([
-            'name' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
-        ]);
-
-        $marker->update($request->all());
-
-        return redirect()->route('markers.index');
-    }
-
-    public function destroy(Marker $marker)
-    {
+    /**
+     * Remove the specified marker from storage.
+     */
+    public function destroy($id)
+{
+    $marker = Marker::find($id);
+    if ($marker) {
         $marker->delete();
 
-        return redirect()->route('markers.index');
+        return redirect()->route('markers.index')
+            ->with('success', 'Marker deleted successfully');
+    } else {
+        return redirect()->back()->withErrors('Marker not found.');
     }
+}
+
 }

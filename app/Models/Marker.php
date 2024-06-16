@@ -9,5 +9,4 @@ class Marker extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'latitude', 'longitude', 'description'];
-    //The $fillable property specifies which attributes can be mass-assigned using Eloquent's create method.
 }

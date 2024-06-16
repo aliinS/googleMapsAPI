@@ -14,24 +14,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
-// Display a list of markers
+Route::get('/', [MarkerController::class, 'index']);
+
+
 Route::get('/markers', [MarkerController::class, 'index'])->name('markers.index');
-
-// Display the form to create a new marker
 Route::get('/markers/create', [MarkerController::class, 'create'])->name('markers.create');
-
-// Store a new marker in the database
 Route::post('/markers', [MarkerController::class, 'store'])->name('markers.store');
+Route::get('/markers/{id}/edit', [MarkerController::class, 'edit'])->name('markers.edit');
+Route::put('/markers/{id}', [MarkerController::class, 'update'])->name('markers.update');
+Route::delete('/markers/{id}', [MarkerController::class, 'destroy'])->name('markers.destroy');
 
-// Display the form to edit an existing marker
-Route::get('/markers/{marker}/edit', [MarkerController::class, 'edit'])->name('markers.edit');
-
-// Update an existing marker in the database
-Route::put('/markers/{marker}', [MarkerController::class, 'update'])->name('markers.update');
-
-// Delete an existing marker from the database
-Route::delete('/markers/{marker}', [MarkerController::class, 'destroy'])->name('markers.destroy');
